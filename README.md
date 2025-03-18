@@ -10,11 +10,6 @@ A powerful database analysis tool that provides an MCP (Model Context Protocol) 
   - Get detailed schema information for specific tables
   - View column definitions, data types, and constraints
 
-- **Relationship Analysis**
-
-  - Discover foreign key relationships between tables
-  - View detailed relationship information including source and target tables/columns
-
 - **Safe Query Execution**
   - Execute SELECT queries with parameterized inputs
   - Built-in security measures to prevent unauthorized modifications
