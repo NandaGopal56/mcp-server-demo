@@ -14,9 +14,10 @@ class DatabaseConnector:
     """
     
     def __init__(self):
+        load_dotenv()
         """Initialize the database connector with connection parameters from environment variables."""
-        self.host = os.getenv("POSTGRES_HOST", "localhost")
-        self.port = os.getenv("POSTGRES_PORT", "5432")
+        self.host = os.getenv("POSTGRES_HOST")
+        self.port = os.getenv("POSTGRES_PORT")
         self.dbname = os.getenv("POSTGRES_DB")
         self.user = os.getenv("POSTGRES_USER")
         self.password = os.getenv("POSTGRES_PASSWORD")
@@ -253,9 +254,10 @@ class DatabaseAnalyzer:
     
     def __init__(self):
         """Initialize the DatabaseAnalyzer with MCP server and database connector."""
-        load_dotenv()
+
         self.mcp = FastMCP("database_analyzer")
         self.db = DatabaseConnector()
+        self.db.connect()
         self._register_tools()
     
     def _register_tools(self):
