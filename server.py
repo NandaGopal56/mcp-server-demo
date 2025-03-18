@@ -136,72 +136,6 @@ class DatabaseConnector:
             traceback.print_exc()
             return {"error": error_msg}
     
-    def get_relationships(self, schema_name: str = "public", table_name: str = None) -> Dict[str, Any]:
-        """
-        Get foreign key relationships for a specific table or all tables in a schema.
-        
-        Args:
-            schema_name (str, optional): Schema name. Defaults to "public".
-            table_name (str, optional): Table name to filter by. Defaults to None.
-            
-        Returns:
-            Dict[str, Any]: Dictionary containing relationships or error message.
-        """
-        if not self.is_connected():
-            return {"error": "No active database connection"}
-        
-        try:
-            cursor = self.conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-            
-            query = """
-                SELECT
-                    tc.constraint_name,
-                    tc.table_name as source_table,
-                    kcu.column_name as source_column,
-                    ccu.table_name as target_table,
-                    ccu.column_name as target_column
-                FROM information_schema.table_constraints tc
-                JOIN information_schema.key_column_usage kcu
-                    ON tc.constraint_name = kcu.constraint_name
-                    AND tc.table_schema = kcu.table_schema
-                JOIN information_schema.constraint_column_usage ccu
-                    ON ccu.constraint_name = tc.constraint_name
-                    AND ccu.table_schema = tc.table_schema
-                WHERE tc.constraint_type = 'FOREIGN KEY'
-                    AND tc.table_schema = %s
-            """
-            
-            params = [schema_name]
-            
-            if table_name:
-                query += " AND tc.table_name = %s"
-                params.append(table_name)
-            
-            cursor.execute(query, params)
-            
-            relationships = []
-            for row in cursor.fetchall():
-                relationships.append({
-                    "constraint_name": row["constraint_name"],
-                    "source_table": row["source_table"],
-                    "source_column": row["source_column"],
-                    "target_table": row["target_table"],
-                    "target_column": row["target_column"]
-                })
-            
-            cursor.close()
-            
-            return {
-                "schema": schema_name,
-                "table": table_name if table_name else "all",
-                "relationships": relationships,
-                "count": len(relationships)
-            }
-        except Exception as e:
-            error_msg = f"Error fetching relationships: {str(e)}"
-            print(error_msg)
-            traceback.print_exc()
-            return {"error": error_msg}
     
     def execute_query(self, query: str, params: List[Any] = None) -> Dict[str, Any]:
         """
@@ -283,17 +217,6 @@ class DatabaseAnalyzer:
                 schema_name (str, optional): Schema name. Defaults to "public".
             """
             return self.db.get_table_schema(table_name, schema_name)
-        
-        @self.mcp.tool()
-        async def get_relationships(schema_name: str = "public", table_name: str = None) -> Dict[str, Any]:
-            """
-            Get foreign key relationships for a specific table or all tables in a schema.
-            
-            Args:
-                schema_name (str, optional): Schema name. Defaults to "public".
-                table_name (str, optional): Table name to filter by. Defaults to None.
-            """
-            return self.db.get_relationships(schema_name, table_name)
         
         @self.mcp.tool()
         async def execute_query(query: str, params: List[Any] = None) -> Dict[str, Any]:
